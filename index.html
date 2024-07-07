@@ -264,17 +264,29 @@
             let c = [...a]; // deep copy using spread operator
 
             let j = 0;
-            for (let i of c) {
-                if (i === b[j]) {
+            let jump = 0;
+
+            for (let i in c){
+                if (jump){
+                    jump = 0;
+                    continue;
+                }
+
+                let el = c[i];
+
+                if (el == b[j]){
                     j++;
-                    if (j === b.length) {
+                    if (j == b.length){
+                        break;
+                    }
+                } else {
+                    jump = 1;
+                    c.splice(i,0,b[j]);
+                    j++;
+                    if (j == b.length){
                         break;
                     }
                 }
-            }
-            while (j < b.length) {
-                c.push(b[j]);
-                j++;
             }
 
             return c;

@@ -225,6 +225,20 @@
             top: 20px;
         }
 
+        .element-label{
+
+            position: absolute;
+            width: 100px;
+            font-size: 12px;
+
+            top: -30px;
+            left: -10px;
+
+            text-shadow: 2px 2px lightgray;
+
+            text-align: center;
+        }
+
 
     </style>
     <script>
@@ -472,6 +486,10 @@
             arrow.className = 'arrow';
             arrow.innerHTML = '→';
 
+
+            let label = document.createElement('div');
+            label.className = 'element-label';
+
             if (i == -1){
                 div.id = 'element-' + result.length;
                 img.src = 'https://minecraft.wiki/images/Crafter_JE4_BE3.png';
@@ -481,11 +499,13 @@
             }
             
             if (result[i] == -1){
-                ;
+                label.innerHTML = 'empty-space';
             } else {
                 img.src = 'https://mcapi.marveldc.me/item/' + blocks[result[i]].name + '?width=128&height=128&fuzzySearch=bool';
+                label.innerHTML = blocks[result[i]].displayName;
             }
 
+            div.appendChild(label);
             div.appendChild(img);
             div.appendChild(arrow);
             output.appendChild(div);

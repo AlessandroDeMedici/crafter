@@ -163,6 +163,8 @@
             flex-direction: row;
             align-items: center;
 
+            padding: 20px;
+
         }
 
 
@@ -229,6 +231,7 @@
 
             position: absolute;
             width: 100px;
+            height: 20px;
             font-size: 12px;
 
             top: -30px;
@@ -237,6 +240,46 @@
             text-shadow: 2px 2px lightgray;
 
             text-align: center;
+        }
+
+
+        .element-index{
+
+            position: absolute;
+            width: 100px;
+            height: 20px;
+            font-size: 10px;
+
+            bottom: -50px;
+            left: -10px;
+
+            text-shadow: 2px 2px lightgray;
+            
+            text-align: center;
+        }
+
+        .line{
+
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+
+            position: absolute;
+            width: 80px;
+
+            text-align: center;
+
+            bottom: -30px;
+
+            color: red;
+            font-size: 20px;
+            text-shadow: 2px 2px lightgray;
+
+        }
+
+        .single-index{
+            margin: 3px;
+            padding: 3px;
+            border: solid 1px red;
         }
 
 
@@ -260,6 +303,9 @@
         // result of computation
         let result = [];
 
+        // result of indexing
+        let indexes = [];
+
         function merge(a, b) {
             let c = [...a]; // deep copy using spread operator
 
@@ -267,19 +313,17 @@
             let jump = 0;
 
             for (let i in c){
-                if (jump){
-                    jump = 0;
-                    continue;
-                }
-
                 let el = c[i];
 
                 if (el == b[j]){
+                    jump = 0;
                     j++;
                     if (j == b.length){
                         break;
                     }
                 } else {
+                    if (jump)
+                        continue;
                     jump = 1;
                     c.splice(i,0,b[j]);
                     j++;
@@ -287,6 +331,11 @@
                         break;
                     }
                 }
+            }
+
+            while (j < b.length - 1){
+                c.push(b[j]);
+                j++;
             }
 
             return c;
@@ -319,7 +368,7 @@
                 if (x === b[j]) {
                     indici.push(i);
                     j++;
-                    if (j === b.length) {
+                    if (j == b.length) {
                         return;
                     }
                 }
@@ -415,6 +464,7 @@
 
             
             e.preventDefault();
+
             // devo pulire l'architettura
             let elements = document.querySelectorAll('.element');
             for (let element in elements){
@@ -427,6 +477,7 @@
             test = [];
 
             let list = document.querySelectorAll('input[type="checkbox"]:checked');
+            let id_list = [];
 
             for (let e in list){
                 let array = [];
@@ -438,6 +489,7 @@
                 // ottengo la ricetta
                 let id = list[e].dataset.id;
                 let ricetta = recipes[id]['0'];
+                id_list.push(id);
 
                 if (ricetta.inShape){
                     // si tratta di una ricetta inshape
@@ -471,6 +523,14 @@
             // adesso in result si trova il vettore con tutti i risultati
             message.style.display = 'none';
 
+            // devo calcolare gli indici
+            indexes = [];
+            for (let i in test){
+                let r = test[i];
+                let indici = index(result,r);
+                indexes[id_list[i]] = indici;
+            }
+
             if (result == [])
                 message.style.display = '';
 
@@ -498,9 +558,32 @@
             arrow.className = 'arrow';
             arrow.innerHTML = '→';
 
+            let line = document.createElement('div');
+            line.className = 'line';
+            line.innerHTML = '|';
 
+            // stampa label
             let label = document.createElement('div');
             label.className = 'element-label';
+
+            let contenitoreIndice = document.createElement('div');
+            contenitoreIndice.className = 'element-index';
+
+            // stampa linee
+            if (i != -1){
+                for (let id in indexes){
+                    let indici = indexes[id];
+
+                    for (let j of indici){
+                        if (j == i){
+                            let indice = document.createElement('div');
+                            indice.className = 'single-index';
+                            indice.innerHTML = blocks[id].displayName;
+                            contenitoreIndice.appendChild(indice);
+                        }
+                    }
+                }
+            }
 
             if (i == -1){
                 div.id = 'element-' + result.length;
@@ -520,6 +603,8 @@
             div.appendChild(label);
             div.appendChild(img);
             div.appendChild(arrow);
+            div.appendChild(contenitoreIndice);
+            div.appendChild(line);
             output.appendChild(div);
         }
 
@@ -550,9 +635,9 @@
 </head>
 <body>
 
-    <h1>Architettura autocrafter</h1>
+    <h1>Architettura crafter</h1>
     <div id="output">
-        <div id="message">Crea la tua prima architettura...</div>
+        <div id="message">Crea la tua architettura...</div>
     </div>
 
     <form id="select">

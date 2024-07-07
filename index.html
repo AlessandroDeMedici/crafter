@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Autocrafter</title>
+    
+    <link href="https://fonts.cdnfonts.com/css/minecraft-3" rel="stylesheet">
+    
+    <style>
+
+        body {
+            font-family: 'Minecraft', sans-serif;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+
+            border: 0px;
+        }
+
+        .checkbox-wrapper {
+            height: 120px;
+            width: 120px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 0 25px rgba(17, 1,68, 0.08);
+            margin: 20px;
+            position: relative;
+
+            font-size: small;
+            padding: 10px;
+            text-align: center;
+
+        }
+
+        input[type="checkbox"] {
+            -webkit-appearance: none;
+            
+            position: absolute;
+            top: -2px;
+            left: -2px;
+
+
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+
+            transition: all 0.1s ease-in-out;
+        }
+
+        input[type="checkbox"]:hover {
+            box-shadow: 0px 0px 30px rgba(17, 1,68, 0.3);
+        }
+
+        input[type="checkbox"]:checked {
+            border: solid 4px #2980b9;
+        }
+
+        .checkbox-wrapper img {
+            height: 50%;
+
+            position: absolute;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 20px;
+            bottom: 0;
+            cursor: pointer;
+        }
+
+        #main {
+            position: relative;
+        }
+
+        .search-container {
+            border: 0px;
+            margin: 20px;
+            height: 150px;
+            position: relative;
+        }
+
+        .input-container{
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+
+
+            position: absolute;
+            top: 70px;
+            left: 250px;
+            right: 30px;
+            margin: 20px;
+        }
+
+        button {
+            color: white;
+
+            width: 100px;
+            height: 64px;
+            border-radius: 30px;
+            margin-left: 20px;
+
+            font-family: 'Minecraft', sans-serif;
+            border: 0px;
+
+            box-shadow: 0 0 25px rgba(17, 1,68, 0.08);
+        }
+
+        #deselect{
+            background-color: #2980b9;
+        }
+
+        #go{
+            background-color: #2ecc71;
+        }
+
+        #search {
+            width: 300px;
+            height: 40px;
+            border-radius: 50px;
+            box-shadow: 0 0 25px rgba(17, 1,68, 0.08);
+            font-size: 30px;
+            padding: 10px;
+            font-family: 'Minecraft', sans-serif;
+        }
+
+        .search-label{
+
+            color: black;
+            text-shadow: 2px 2px lightgray;
+
+            position: absolute;
+            margin-left: auto;
+            margin-right: auto;
+            left: 0;
+            right: 0;
+            top: 20px;
+            text-align: center;
+
+            font-size: 30px;
+
+        }
+
+        h1 {
+            text-align: center;
+        }
+        
+        #output{
+            border-radius: 30px;
+            border: 2px solid black;
+            box-shadow: 0 0 25px rgba(17, 1,68, 0.08);
+            height: 400px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            
+            display: flex;
+            overflow: auto;
+            flex-direction: row;
+            align-items: center;
+
+        }
+
+
+        form {
+            border-radius: 30px;
+            margin: 20px;
+            width: 90%;
+            border: 2px solid black;
+            box-shadow: 0 0 25px rgba(17, 1,68, 0.08);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        button:hover, #search:hover{
+            box-shadow: 0px 0px 30px rgba(17, 1,68, 0.3);
+            transition: box-shadow 0.1s ease-out;
+        }
+
+        #message {
+            color: grey;
+            text-shadow: lightgray 3px 3px;
+            font-size: 30px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .element{
+
+            width: 80px;
+            height: 80px;
+
+
+            flex-shrink: 0;
+            margin: 20px;
+            border: solid 3px gray;
+            box-shadow: 2px 2px black;
+            position: relative;
+        }
+
+
+        .element img {
+            height: 40px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            margin-bottom: auto;
+            margin-top: auto;
+        }
+
+        .arrow {
+            position: absolute;
+            font-size: 25px;
+            text-shadow: lightgray 2px 2px;
+
+
+            right: -35px;
+            top: 20px;
+        }
+
+
+    </style>
+    <script>
+
+        let blocks;
+        let recipes;
+        let main;
+        let search;
+        let select;
+        let output;
+
+        let go;
+        let deselect;
+        let message;
+
+        // array of current selected item recipes
+        let test = [];
+
+        // result of computation
+        let result = [];
+
+        function merge(a, b) {
+            let c = [...a]; // deep copy using spread operator
+
+            let j = 0;
+            for (let i of c) {
+                if (i === b[j]) {
+                    j++;
+                    if (j === b.length) {
+                        break;
+                    }
+                }
+            }
+            while (j < b.length) {
+                c.push(b[j]);
+                j++;
+            }
+
+            return c;
+        }
+
+        function makestring(test) {
+            if (test == []) {
+                return [];
+            }
+
+            if (test[1] == undefined) {
+                return test;
+            }
+
+            // start with the first two arrays
+            let result = merge(test[0], test[1]);
+
+            for (let i = 2; i < test.length; i++) {
+                result = merge(result, test[i]);
+            }
+
+            return result;
+        }
+
+        function index(a, b) {
+            let indici = [];
+            let j = 0;
+
+            a.forEach((x, i) => {
+                if (x === b[j]) {
+                    indici.push(i);
+                    j++;
+                    if (j === b.length) {
+                        return;
+                    }
+                }
+            });
+
+            return indici;
+        }
+
+        async function loadJSON(url){
+            let data = await fetch(url);
+            return data.json();
+        }
+
+        async function loadData(){
+            recipes = await loadJSON('https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc/1.20.3/recipes.json');
+            blocks = await loadJSON('https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc/1.20.3/items.json');
+
+            for (let r in recipes){
+
+                // non posso aggiungere la ricetta a meno che non riempia tutti e 9 gli slot
+                let recipe = recipes[r]['0'];
+
+                let div = document.createElement('div');
+                div.className = 'checkbox';
+
+                // creo gli elementi
+                let check = document.createElement('input');
+                check.type = 'checkbox';
+                check.className = 'checkbox-input';
+                let label = document.createElement('label');
+                label.className = 'checkbox-wrapper'
+                let img = document.createElement('img');
+                img.className = 'checkbox-icon';
+
+                // ottengo l'oggetto 
+                check.id = 'item-' + blocks[recipe.result.id].name;
+                check.dataset.id = r;
+                check.value = blocks[recipe.result.id].name;
+                label.htmlFor = 'item-' + blocks[recipe.result.id].name;
+                label.innerHTML = blocks[recipe.result.id].displayName;
+                img.src = 'https://mcapi.marveldc.me/item/' + blocks[recipe.result.id].name  + '?width=128&height=128&fuzzySearch=bool';
+                img.alt = '';
+
+
+                label.appendChild(img);
+                label.appendChild(check);
+                main.appendChild(label);
+                main.appendChild(document.createElement('br'));
+
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            main = document.getElementById('main');
+            search = document.getElementById('search');
+            select = document.getElementById('select');
+            output = document.getElementById('output');
+            deselect = document.getElementById('deselect');
+            go = document.getElementById('go');
+            message = document.getElementById('message');
+
+            deselect.onclick = clearFunction;
+            go.onclick = compute;
+            select.onsubmit = compute;
+            search.oninput = onSearch;
+
+            loadData();
+
+        });
+
+
+        function onSearch(e){
+            e.preventDefault();
+
+            for (let c in main.children){
+                let children = main.children[c];
+                if (children.innerHTML == undefined)
+                    continue;
+
+                if (search.value == '')
+                    children.style.display = '';
+                else {
+                    let str = children.innerHTML.split('<')[0];
+                    if (str.toLowerCase().includes(search.value.toLowerCase()))
+                        children.style.display = '';
+                    else
+                        children.style.display = 'none';
+                }
+            }
+        }
+
+        function compute(e){
+
+            
+            e.preventDefault();
+            // devo pulire l'architettura
+            while (output.firstChild){
+                output.removeChild(output.firstChild);
+            }
+
+
+            test = [];
+
+            let list = document.querySelectorAll('input[type="checkbox"]:checked');
+
+            for (let e in list){
+                let array = [];
+
+                // se non si tratta di un elemento allora passo avanti
+                if (list[e].nodeType == undefined)
+                    continue;
+                
+                // ottengo la ricetta
+                let id = list[e].dataset.id;
+                let ricetta = recipes[id]['0'];
+
+                if (ricetta.inShape){
+                    // si tratta di una ricetta inshape
+                    let row0 = ricetta.inShape['0'] ? ricetta.inShape['0'] : null;
+                    let row1 = ricetta.inShape['1'] ? ricetta.inShape['1'] : null;
+                    let row2 = ricetta.inShape['2'] ? ricetta.inShape['2'] : null;
+
+                    array.push(row2 && row2[2] ? row2[2] : -1);
+                    array.push(row2 && row2[1] ? row2[1] : -1);
+                    array.push(row2 && row2[0] ? row2[0] : -1);
+                    array.push(row1 && row1[2] ? row1[2] : -1);
+                    array.push(row1 && row1[1] ? row1[1] : -1);
+                    array.push(row1 && row1[0] ? row1[0] : -1);
+                    array.push(row0 && row0[2] ? row0[2] : -1);
+                    array.push(row0 && row0[1] ? row0[1] : -1);
+                    array.push(row0 && row0[0] ? row0[0] : -1);
+
+                    test.push(array);
+
+                } else if (ricetta.ingredients){
+
+                    array = ricetta.ingredients;
+                    test.push(array);
+                
+                }
+            }
+
+            // adesso in test si trova il vettore con tutte le ricette
+            result = makestring(test);
+
+            // adesso in result si trova il vettore con tutti i risultati
+            message.style.display = 'none';
+
+            if (result == [])
+                message.style.display = '';
+
+            for (let a in result){
+                printElement(a);
+            }
+
+            printElement(-1);
+
+        }
+
+        // funzione per stampare un singolo elemento dell'architettura
+        function printElement(i){
+            let div = document.createElement('div');
+            div.id = 'element-' + i;
+            div.className = 'element';
+
+            let img = document.createElement('img');
+
+            let arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            arrow.innerHTML = '→';
+
+            if (i == -1){
+                img.src = 'https://minecraft.wiki/images/Crafter_JE4_BE3.png';
+                div.appendChild(img);
+                output.appendChild(div);
+                return;
+            }
+            
+            if (result[i] == -1){
+                ;
+            } else {
+                img.src = 'https://mcapi.marveldc.me/item/' + blocks[result[i]].name + '?width=128&height=128&fuzzySearch=bool';
+            }
+
+            div.appendChild(img);
+            div.appendChild(arrow);
+            output.appendChild(div);
+        }
+
+
+        function clearFunction(e){
+            e.preventDefault();
+
+            // devo pulire l'architettura e devo deselezionare il resto
+            while (output.firstChild){
+                output.removeChild(output.firstChild);
+            }
+
+            let check = document.querySelectorAll('input[type="checkbox"]');
+
+            for (let c in check){
+                check[c].checked=0;
+            }
+
+        }
+
+    </script>
+</head>
+<body>
+
+    <h1>Architettura autocrafter</h1>
+    <div id="output">
+        <div id="message">Crea la tua prima architettura...</div>
+    </div>
+
+    <form id="select">
+        <fieldset class="search-container">
+            <label for="search" class="search-label">Cerca Oggetti</label><br/>
+            <div class="input-container">
+                <input id="search" type="text">
+                <button id="deselect">Clear</button>
+                <button id="go">Go</button>
+            </div>
+        </fieldset>
+        <fieldset id="main" class="checkbox-group">
+        </fieldset>
+    </form>
+</body>
+</html>

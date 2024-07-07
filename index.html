@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Autocrafter</title>
+    <title>Crafter</title>
     
     <link href="https://fonts.cdnfonts.com/css/minecraft-3" rel="stylesheet">
     
@@ -390,10 +390,13 @@
             
             e.preventDefault();
             // devo pulire l'architettura
-            while (output.firstChild){
-                output.removeChild(output.firstChild);
+            let elements = document.querySelectorAll('.element');
+            for (let element in elements){
+                let e = elements[element];
+                if (e.nodeType == undefined)
+                    continue;
+                output.removeChild(e);
             }
-
 
             test = [];
 
@@ -445,8 +448,12 @@
             if (result == [])
                 message.style.display = '';
 
-            for (let a in result){
-                printElement(a);
+            if (result.length == 1)
+                result = result[0];
+
+
+            for (let i = 0; i < result.length; i++){
+                printElement(i);
             }
 
             printElement(-1);
@@ -488,9 +495,15 @@
             e.preventDefault();
 
             // devo pulire l'architettura e devo deselezionare il resto
-            while (output.firstChild){
-                output.removeChild(output.firstChild);
+            let elements = document.querySelectorAll('.element');
+            for (let element in elements){
+                let e = elements[element];
+                if (e.nodeType == undefined)
+                    continue;
+                output.removeChild(e);
             }
+
+            message.style.display = '';
 
             let check = document.querySelectorAll('input[type="checkbox"]');
 
